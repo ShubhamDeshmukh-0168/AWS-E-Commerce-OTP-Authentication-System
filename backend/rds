@@ -11,9 +11,9 @@ CORS(app)
 # MySQL CONFIGURATION (YOUR DETAILS)
 # -------------------------
 db = {
-    "host": "",    # ==> your host
+    "host": "database-sd.c3q20a0u4p06.us-west-2.rds.amazonaws.com",    # ==> your host
     "user": "admin",
-    "password": "Cloud1234",
+    "password": "Cloud123",
     "database": "" # ===> your db
 }
 
