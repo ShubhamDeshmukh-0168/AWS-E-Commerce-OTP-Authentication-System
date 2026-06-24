@@ -1,0 +1,211 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import pymysql
+import os
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
+
+# -------------------------
+# MySQL CONFIGURATION (YOUR DETAILS)
+# -------------------------
+db = {
+    "host": "",    # ==> your host
+    "user": "admin",
+    "password": "Cloud1234",
+    "database": "" # ===> your db
+}
+
+# -------------------------
+# MySQL CONNECT FUNCTION
+# -------------------------
+def get_connection():
+    return pymysql.connect(
+        host=db["host"],
+        user=db["user"],
+        password=db["password"],
+        database=db["database"],
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+
+# ============================================================
+#  SAVE RECEIPT (FROM FRONTEND)
+# ============================================================
+@app.route("/save-receipts", methods=["POST"])
+def save_receipt():
+    try:
+        data = request.get_json()
+
+        filename = data.get("filename")
+        mobile = data.get("mobile")
+        content = data.get("receipt_text")
+
+        if not filename or not content:
+            return jsonify({"error": "Filename and receipt_text are requiredd"}), 400
+
+        # Calculate file size (in KB)
+        size_kb = round(len(content.encode("utf-8")) / 1024, 2)
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        sql = """
+            INSERT INTO receipts (filename, mobile, content, size_kb, created_at)
+            VALUES (%s, %s, %s, %s, NOW())
+        """
+
+        cursor.execute(sql, (filename, mobile, content, size_kb))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "status": "success",
+            "message": "Receipt saved",
+            "filename": filename,
+            "mobile": mobile,
+            "size_kb": size_kb
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ============================================================
+#  HOME ENDPOINT
+# ============================================================
+@app.route("/", methods=["GET"])
+def home():
+    return "Receipt API Running on Port 5001"
+
+
+# ============================================================
+#  START SERVER
+# ============================================================
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port= , debug=True)   # =>  your port
+
+
+
+
+
+------------------------------------------  your sql ---------------------------------------
+
+
+
+DROP TABLE IF EXISTS receipts;
+
+CREATE TABLE receipts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    filename VARCHAR(255),
+    mobile VARCHAR(20),
+    content LONGTEXT,
+    size_kb DECIMAL(10,2),
+    created_at DATETIME
+);
+
+
+
+
+----------------------------------------------------to check---------------------------
+
+
+
+SELECT * FROM receipts;
+
+
+
+
+-------------------------------------------------------------lambda-------------------------------------------------
+
+import json
+import pymysql
+import boto3
+from datetime import datetime
+
+# ---------------- MySQL CONFIG ----------------
+DB_HOST = "computers.cjy48iyci4zm.ap-northeast-1.rds.amazonaws.com"
+DB_USER = "admin"
+DB_PASSWORD = "Cloud1234"
+DB_NAME = "computers"
+
+# ---------------- S3 CONFIG ----------------
+S3_BUCKET = "google-shop-uploads"
+S3_KEY_PREFIX = "rds-backups/"  # folder in S3
+
+# ---------------- CONNECT TO RDS ----------------
+def get_connection():
+    return pymysql.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME,
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+# ---------------- LAMBDA HANDLER ----------------
+def lambda_handler(event, context):
+    try:
+        # Connect to RDS
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Fetch data from receipts table
+        cursor.execute("SELECT * FROM receipts")
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        # Convert data to JSON
+        json_data = json.dumps(rows, default=str, indent=2)
+
+        # Upload JSON to S3
+        s3 = boto3.client("s3")
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        s3_key = f"{S3_KEY_PREFIX}receipts_{timestamp}.json"
+
+        s3.put_object(
+            Bucket=S3_BUCKET,
+            Key=s3_key,
+            Body=json_data,
+            ContentType="application/json"
+        )
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": f"Data uploaded to S3 successfully: {s3_key}",
+                "records_fetched": len(rows)
+            })
+        }
+
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
+
+-----------------------------------bucket policy---------------------------------------------------------------------
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowLambdaPutObject",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::049061799945:role/service-role/Google-shop-computers123-role-gil49t8q"
+            },
+            "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": "arn:aws:s3:::google-shop-abinash/*"
+        }
+    ]
+}
+

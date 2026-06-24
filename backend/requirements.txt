@@ -1,0 +1,6 @@
+flask
+flask_cors
+pymysql
+mysql-connector-python
+werkzeug
+flask-mail
