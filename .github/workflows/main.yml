@@ -31,9 +31,9 @@ jobs:
           python backend/app.py &
           sleep 10
 
-      - name: Verify backend is running
+      - name: Verify backend health
         run: |
-          curl --fail http://127.0.0.1:5000/
+          curl --fail http://127.0.0.1:5000/api
 
-      - name: Success message
+      - name: Backend is healthy
         run: echo "Backend started successfully."
