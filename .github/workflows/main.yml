@@ -1,25 +1,25 @@
-# name: Python CI
+name: Python CI
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Setup Python
-#         uses: actions/setup-python@v5
-#         with:
-#           python-version: '3.11'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-#       - name: Install dependencies
-#         run: pip install -r backend/requirements.txt
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
 
-#       - name: Run app
-#         run: python backend/app.py
+      - name: Run app
+        run: python backend/app.py
