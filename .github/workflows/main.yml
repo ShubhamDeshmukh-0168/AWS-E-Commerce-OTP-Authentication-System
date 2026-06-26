@@ -19,7 +19,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -31,6 +31,9 @@ jobs:
           python backend/app.py &
           sleep 10
 
-      - name: Verify application is running
+      - name: Verify backend is running
         run: |
-          curl http://127.0.0.1:5000
+          curl --fail http://127.0.0.1:5000/
+
+      - name: Success message
+        run: echo "Backend started successfully."
