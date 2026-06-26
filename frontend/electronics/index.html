@@ -258,9 +258,9 @@ footer.site-footer {
         <span id="totalPaymentAmount" style="font-weight:bold;font-size:1.25em;color:#4dd784;">₹0</span>
       </div>
       <div id="paymentUPI" style="display:none;">
-        <div style="margin-bottom:1em;">Pay to UPI ID: <strong>multicloud-veera-sir@kotak811</strong></div>
+        <div style="margin-bottom:1em;">Pay to UPI ID: <strong>multicloud-Shubham Deshmukh@kotak811</strong></div>
         <img src="scan.jpg" alt="UPI QR" style="display:block;margin:0 auto 1em auto;width:150px;height:150px;object-fit:contain;background:#fff;border-radius:8px;">
-        <input id="upiInput" type="text" value="multicloud-veera-sir@kotak811" readonly style="width:100%;padding:6px;margin-bottom:1em;text-align:center;" onclick="this.select()">
+        <input id="upiInput" type="text" value="multicloud-Shubham Deshmukh@kotak811" readonly style="width:100%;padding:6px;margin-bottom:1em;text-align:center;" onclick="this.select()">
         <div style="font-size:0.95em;color:#aaa; text-align:center;">Scan QR with any UPI app or copy/paste UPI ID</div>
         <button class="btn small" style="margin-top:1em" onclick="copyUPIID()">Copy UPI ID</button>
       </div>
@@ -552,7 +552,7 @@ async function viewReceipt() {
   lines.push(`Total Paid: ${total}`);
   lines.push('Payment Successful!');
   lines.push('----------------------------');
-  lines.push('Developed by abinash kumar');
+  lines.push('Developed by Shubham Deshmukh');
 
   const receiptText = lines.join('\n');
 
@@ -569,7 +569,7 @@ async function viewReceipt() {
       <div style="margin-bottom:12px">${itemsHTML}</div>
       <div style="font-size:1.2em;margin-bottom:20px;"><b>Total Paid:</b> <span style="color:#4dd784;">${total}</span></div>
       <div style="margin-bottom:18px;color:#5c5c5c;">Payment Successful via Card/NetBanking/UPI</div>
-      <div style="font-size:0.9em;color:#333;text-align:center;">Developed by abinash kumar</div>
+      <div style="font-size:0.9em;color:#333;text-align:center;">Developed by Shubham Deshmukh</div>
     </div>
   `;
   const win = window.open("", "_blank", "width=480,height=600");
@@ -609,7 +609,7 @@ function downloadReceipt() {
     `Total Paid: ${total}`,
     'Payment Successful!',
     '----------------------------',
-    'Developed by abinash kumar'
+    'Developed by Shubham Deshmukh'
   ];
   const receiptTxt = lines.join('\n');
   const blob = new Blob([receiptTxt],{type:'text/plain'});
@@ -715,7 +715,7 @@ async function autoSendReceiptToS3() {
     `Total Paid: ${total}`,
     'Payment Successful!',
     '----------------------------',
-    'Developed by abinash kumar'
+    'Developed by Shubham Deshmukh'
   ];
   const receiptText = lines.join('\n');
 
