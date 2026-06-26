@@ -1,0 +1,7 @@
+flask
+flask-cors
+pymysql
+werkzeug
+flask-mail
+pytest
+pytest-mock

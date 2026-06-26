@@ -1,0 +1,976 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Phone</title>
+  <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+  <style>
+    :root {
+      --google-blue: #1a73e8;
+      --text-primary: #202124;
+      --text-secondary: #5f6368;
+      --background-light: #f8f9fa;
+      --border-color: #dadce0;
+      --green: #34a853;
+      --error: #ea4335;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+      color: var(--text-primary);
+      background-color: white;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 40px;
+    }
+    .navbar-left, .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--google-blue);
+      text-decoration: none;
+      margin-right: 20px;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 20px;
+      padding: 8px 0;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+      font-size: 24px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      margin-left: 20px;
+      transition: color 0.2s;
+    }
+    .material-symbols-outlined:hover {
+      color: var(--text-primary);
+    }
+    /* Login/Signup Navbar Buttons */
+    .navbar-auth-btn {
+      margin-left: 12px;
+      padding: 6px 18px;
+      border: 1px solid var(--google-blue);
+      border-radius: 20px;
+      background: #fff;
+      color: var(--google-blue);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.17s, border-color 0.17s, color 0.17s;
+      outline: none;
+    }
+    .navbar-auth-btn:hover {
+      background: var(--google-blue);
+      color: #fff;
+    }
+    /* Navbar Profile badge (after login) */
+    .navbar-profile-container {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-left: 12px;
+      /* For transition effect when showing */
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .navbar-profile-container.show {
+      display: flex;
+      opacity: 1;
+    }
+    .navbar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--google-blue);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(26,115,232,0.11);
+      user-select: none;
+    }
+    .navbar-profile-name-email {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      line-height: 1.15;
+    }
+    .navbar-profile-username {
+      color: var(--google-blue);
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: -3px;
+    }
+    .navbar-profile-email {
+      color: #666;
+      font-size: 12px;
+      max-width: 140px;
+      /* Prevent overflow */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .navbar-logout-btn {
+      margin-left: 14px;
+      padding: 6px 16px;
+      background: #fff;
+      color: var(--google-blue);
+      border: 1px solid var(--google-blue);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      transition: background 0.14s, color 0.14s;
+    }
+    .navbar-logout-btn:hover {
+      background: var(--google-blue);
+      color: #fff;
+    }
+    /* AUTH MODAL STYLES */
+    .auth-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(32,33,36,0.39);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .auth-modal-overlay.open {
+      display: flex;
+    }
+    .card#authCard {
+      margin: 0;
+      max-width: 400px;
+      width: 96vw;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 36px 0 rgba(32,33,36,0.16), 0 0px 0px 1px #e2e5ea;
+      padding: 32px 35px 26px 35px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 470px;
+      position: relative;
+      border: 1px solid #e3e6ee;
+      justify-content: flex-start;
+      box-sizing: border-box;
+    }
+
+    /* Fix and enhance the logo for auth modal */
+    .auth-logo-google-store {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 24px; /* more space below logo */
+      width: 100%;
+      height: 60px;
+      /* Prevent logo from shrinking/collapsing */
+      min-height: 44px;
+      min-width: 140px;
+      background: transparent;
+    }
+    .auth-logo-google-store img {
+      height: 48px;
+      width: auto;
+      max-width: 160px;
+      max-height: 54px;
+      margin: 0 auto;
+      display: block;
+      background: #fff !important;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(32,33,36,.05);
+      object-fit: contain;
+      padding: 2px 8px 2px 8px;
+    }
+    /* End logo fix */
+
+    .auth-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: #9BA4AE;
+      cursor: pointer;
+      z-index: 1;
+      transition: color .2s;
+    }
+    .auth-close-btn:hover {
+      color: #d84242;
+    }
+    #authCard h2#formTitle {
+      margin-top: 2px;
+      margin-bottom: 28px;
+      color: var(--google-blue);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      text-align: center;
+    }
+    #signupForm, #loginForm {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 18px;
+      align-items: stretch;
+    }
+    #signupForm input,
+    #loginForm input {
+      padding: 11px 12px;
+      border: 1px solid #dadce0;
+      border-radius: 6px;
+      font-size: 16px;
+      background: #f7f8fa;
+      color: var(--text-primary);
+      transition: border-color 0.18s;
+    }
+    #signupForm input:focus,
+    #loginForm input:focus {
+      border-color: var(--google-blue);
+      outline: none;
+    }
+    #signupForm button, #loginForm button {
+      padding: 12px 0;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--google-blue);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background-color 0.2s;
+    }
+    #signupForm button:hover,
+    #loginForm button:hover {
+      background-color: #156acb;
+    }
+    .switch {
+      color: #666;
+      margin-bottom: 12px;
+      text-align: center;
+      font-size: 15px;
+    }
+    .switch a {
+      color: var(--google-blue);
+      text-decoration: underline;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .message {
+      text-align: center;
+      font-size: 15px;
+      min-height: 20px;
+      margin-bottom: 11px;
+      margin-top: 3px;
+      border-radius: 4px;
+      padding: 5px 3px;
+      display: none;
+    }
+    .message.success {
+      color: var(--green);
+    }
+    .message.error {
+      color: var(--error);
+    }
+    #profile {
+      display: none;
+      width: 100%;
+      margin-top: 17px;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+    }
+    #profile .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--google-blue);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 500;
+      margin: 0 auto 10px auto;
+      box-shadow: 0 2px 6px rgba(26,115,232,0.12);
+    }
+    #profile .profile-info {
+      margin-bottom: 12px;
+    }
+    #profile strong {
+      color: var(--google-blue);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    #profile-email {
+      color: #666;
+      font-size: 15px;
+    }
+    #profile button {
+      background-color: #fff;
+      color: var(--google-blue);
+      font-weight: 500;
+      border: 1px solid var(--google-blue);
+      border-radius: 3px;
+      padding: 9px 22px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background .18s, border-color .18s;
+    }
+    #profile button:hover {
+      background: #f8f9fa;
+      border-color: #174ea6;
+    }
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: calc(100vh - 56px);
+      background-color: var(--background-light);
+      padding: 50px 20px;
+    }
+    .hero-section h1 {
+      font-size: 80px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      max-width: 800px;
+    }
+    .hero-section p {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+    .cta-button {
+      background-color: var(--google-blue);
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    .cta-button:hover {
+      background-color: #1669d6;
+    }
+    .newsletter-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 20px 100px;
+      text-align: center;
+      background-color: #f8f9fa;
+    }
+    .newsletter-section .icon {
+      font-size: 48px;
+      color: var(--google-blue);
+      margin-bottom: 24px;
+      font-variation-settings: 'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;
+    }
+    .newsletter-section h2 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1.2;
+      margin-bottom: 32px;
+      max-width: 650px;
+    }
+    .signup-button {
+      background-color: white;
+      color: var(--google-blue);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 24px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .signup-button:hover {
+      background-color: #f8f9fa;
+      border-color: var(--google-blue);
+    }
+    .disclaimers-section {
+      padding: 60px 40px;
+      background-color: #fff;
+      border-top: 1px solid var(--border-color);
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+    .disclaimers-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .disclaimers-section li {
+      margin-bottom: 15px;
+      position: relative;
+      padding-left: 15px;
+    }
+    .disclaimers-section li::before {
+      content: '*';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--text-secondary);
+    }
+    .footer {
+      padding: 40px 40px;
+      background-color: #fff;
+      border-top: 1px solid var(--border-color);
+    }
+    .footer .logo-google-store {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .footer .logo-google-store span {
+      font-size: 24px;
+      font-weight: 700;
+      margin-right: 8px;
+      background: linear-gradient(to right, #4285F4, #EA4335, #FBBC05, #4285F4, #34A853, #EA4335);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .footer .google-text { color: #4285F4; }
+    .footer .google-text span:nth-child(2) { color: #EA4335; }
+    .footer .google-text span:nth-child(3) { color: #FBBC05; }
+    .footer .google-text span:nth-child(4) { color: #4285F4; }
+    .footer .google-text span:nth-child(5) { color: #34A853; }
+    .footer .google-text span:nth-child(6) { color: #EA4335; }
+
+    /* Responsive: shrink modal box on mobile */
+    @media (max-width: 480px) {
+      .card#authCard {
+        max-width: 96vw;
+        padding: 18px 8px 14px 8px;
+        min-height: unset;
+      }
+      .auth-logo-google-store {
+        margin-bottom: 15px;
+        height: 40px;
+        min-height: 34px;
+      }
+      .auth-logo-google-store img {
+        height: 34px;
+        max-width: 95vw;
+        max-height: 40px;
+        padding: 1px 5px;
+        border-radius: 7px;
+      }
+      .navbar-profile-container {
+        max-width: 70vw;
+      }
+      .navbar-profile-email {
+        max-width: 70vw;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+  <div class="navbar-left">
+    <a href="/" class="logo">
+      <span style="color: #4285F4;">G</span><span style="color: #EA4335;">o</span><span style="color: #FBBC05;">o</span><span style="color: #4285F4;">g</span><span style="color: #34A853;">l</span><span style="color: #EA4335;">e</span>
+    </a>
+    <nav class="nav-links">
+      <a href="/electronics" class="btn primary">Electronics</a>
+      <a href="/phones" class="btn primary">Phones</a>
+      <a href="/computers" class="btn primary">Computers</a>
+      <a href="/earphones" class="btn primary">Earphones</a>
+      <a href="/googlepay" class="btn primary">Pay</a>
+      <a href="/googleclothes" class="btn primary">Fashion</a>
+      <a href="/googlegrocery" class="btn primary">Grocery</a>
+      <a href="/googlemusic" class="btn primary">Music</a>
+
+    </nav>
+  </div>
+  <div class="navbar-right">
+    <span class="material-symbols-outlined search-icon" style="margin-right: 18px;">search</span>
+    <button class="navbar-auth-btn" id="navbar-login-btn">Login</button>
+    <button class="navbar-auth-btn" id="navbar-signup-btn">Sign Up</button>
+
+    <!-- Profile container in navbar (shown after login/signup) -->
+    <div class="navbar-profile-container" id="navbarProfile">
+      <span class="navbar-avatar" id="navbarAvatar"></span>
+      <span class="navbar-profile-name-email">
+        <span class="navbar-profile-username" id="navbarProfileUsername"></span>
+        <span class="navbar-profile-email" id="navbarProfileEmail"></span>
+      </span>
+      <button class="navbar-logout-btn" id="navbarLogoutBtn">Logout</button>
+    </div>
+  </div>
+</header>
+
+  <!-- AUTH POPUP MODAL (Initially Hidden) -->
+  <div class="auth-modal-overlay" id="authModalOverlay">
+    <div class="card" id="authCard" tabindex="-1">
+      <button class="auth-close-btn" id="closeAuthModal" title="Close">&times;</button>
+      <!-- Logo at top -->
+      <div class="auth-logo-google-store">
+        <img 
+          src="https://latestlogo.com/wp-content/uploads/2024/01/google-store-logo.png" 
+          alt="Google Store Logo" 
+          draggable="false" 
+          style="background:#fff; object-fit:contain;"
+          loading="lazy"
+        />
+      </div>
+      <h2 id="formTitle">Sign Up</h2>
+      <!-- Signup -->
+      <div id="signupForm">
+        <div id="su-inputs">
+          <input type="text" id="su-username" placeholder="Username" required />
+          <input type="email" id="su-email" placeholder="Email" required />
+          <input type="password" id="su-password" placeholder="Password" required />
+        </div>
+        <div id="su-otp-block" style="display:none;">
+          <p style="font-size:14px; color:var(--text-secondary); text-align:center;">Enter the code sent to your email:</p>
+          <input type="text" id="su-otp" placeholder="6-digit Registration OTP" />
+        </div>
+        <button id="su-btn" onclick="signup()">Create Account</button>
+      </div>
+
+      <div id="loginForm" style="display:none;">
+        <div id="li-inputs">
+          <input type="email" id="li-email" placeholder="Email" required />
+          <input type="password" id="li-password" placeholder="Password" required />
+        </div>
+        <div id="li-otp-block" style="display:none;">
+          <p style="font-size:14px; color:var(--text-secondary); text-align:center;">Enter your login security code:</p>
+          <input type="text" id="li-otp" placeholder="6-digit Login OTP" />
+        </div>
+        <button id="li-btn" onclick="login()">Login</button>
+      </div>
+      <div class="switch" id="switchText">
+        Already have an account? <a onclick="toggleForm('login')">Login</a>
+      </div>
+      <div id="msg" class="message"></div>
+      <!-- Profile (only shown in modal, not navbar) -->
+      <div id="profile">
+        <div class="avatar" id="avatar"></div>
+        <div class="profile-info">
+          <strong id="profile-name"></strong><br>
+          <span id="profile-email"></span>
+        </div>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="hero-section">
+    <h1>Welcome to the World of Microservices.</h1>
+    <p> A project by  veera sir Multicloud Devops (nareshit).</p>
+    <p>Google Pixel 10 series is here. Say hello to your new phone with multicloud devops  veera nareshit.</p>
+    <button id="cta-button" class="cta-button">Browse phones</button>
+    <div style="margin-top: 40px; display: flex; justify-content: center;">
+      <video src="https://storage.googleapis.com/mannequin/blobs/7bb2d3b5-02f2-42f0-bdf9-6d677ad41a98.mp4" autoplay muted playsinline loop style="max-width: 80%; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.13);">
+        Sorry, your browser doesn't support embedded videos.
+      </video>
+    </div>
+    <section class="featured-products-section" style="margin-top: 48px;">
+      <h2 style="text-align:center; font-size:2em; font-weight:500;">Shop our featured products</h2>
+      <div class="featured-products" style="display: flex; flex-wrap: wrap; gap: 32px; justify-content: center; margin-top:32px;">
+        
+        <!-- Pixel 10 Pro -->
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://www.gizbot.com/img/299x90/img/gadget-finder/original/2024/09/google-pixel-10-pro-xl_1726557524.png" alt="Pixel 10 Pro" style="width:120px; height:auto; margin-bottom: 18px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Pixel 10 Pro</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">The best of Google, just got better.</span>
+          <strong style="font-size: 1.09em;">$749</strong>
+          <a href="/phones" class="btn primary" style="margin-top:16px;">Shop Now</a>
+        </div>
+        
+        <!-- Pixel Buds Pro -->
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://cdn.tmobile.com/content/dam/t-mobile/en-p/accessories/840244604554/840244604554-frontimage.png" alt="Pixel Buds Pro" style="width:220px; height:auto; margin-bottom: 36px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Pixel Buds Pro</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">Superb sound, delivered wirelessly.</span>
+          <strong style="font-size: 1.09em;">$229</strong>
+          <a href="/earphones" class="btn primary" style="margin-top:16px;">Shop Now</a>
+        </div>
+        
+        <!-- Pixelbook Go -->
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://www.principledtechnologies.com/benchmarkxprt/spotlight/wp-content/uploads/2019/11/Google-Pixelbook-Go_Face.png" alt="Pixelbook Go" style="width:250px; height:auto; margin-bottom:17px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Pixelbook Go</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">Laptops made for mobility.</span>
+          <strong style="font-size: 1.09em;">$649</strong>
+          <a href="/computers" class="btn primary" style="margin-top:16px;">Shop Now</a>
+        </div>
+        
+        <!-- Nest Audio -->
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://static1.xdaimages.com/wordpress/wp-content/uploads/2023/03/google-nest-audio-on-transparent-background.png" alt="Nest Audio" style="width:240px; height:auto; margin-bottom:24px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Nest Audio</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">The helpful speaker you control with your voice.</span>
+          <strong style="font-size: 1.09em;">$99</strong>
+          <a href="/electronics" class="btn primary" style="margin-top:16px;">Shop Now</a>
+        </div>
+        
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://cdn1.iconfinder.com/data/icons/logos-brands-in-colors/436/Google_Pay_GPay_Logo-1024.png" alt="Google Pay" style="width:240px; height:auto; margin-bottom:24px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Google Pay</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">Google Pay Money made simple, by Google.</span>
+          <strong style="font-size: 1.09em;"></strong>
+          <a href="/googlepay" class="btn primary" style="margin-top:16px;">visit now</a>
+        </div>
+        
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://cdn-icons-png.flaticon.com/512/3205/3205438.png" alt="google Shop" style="width:240px; height:auto; margin-bottom:24px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Google Fashion</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">Discover the rich color palette of the world's textiles, dresses and accessories.</span>
+          <strong style="font-size: 1.09em;"></strong>
+          <a href="/googleclothes" class="btn primary" style="margin-top:16px;">Shop Now</a>
+        </div>
+
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://i.ibb.co/yBSSmwZ8/Google-Grocery.png" alt="Google Grocery" style="width:240px; height:auto; margin-bottom:24px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Google Grocery</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">Online shopping now made easy with a wide range of groceries and home needs.</span>
+          <strong style="font-size: 1.09em;"></strong>
+          <a href="/googlegrocery" class="btn primary" style="margin-top:16px;">Shop Now</a>
+        </div>
+
+        <div class="product-card" style="background: #fff; border-radius: 20px; box-shadow: 0 2px 14px rgba(60,64,67,.09); padding: 32px 24px; width:270px; display: flex; flex-direction:column; align-items: center;">
+          <img src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/26ee76c8-646a-4c68-8688-fd27cb911bd6/da10jan-bded5769-4095-42df-bfa6-c55b9e7d36fa.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzI2ZWU3NmM4LTY0NmEtNGM2OC04Njg4LWZkMjdjYjkxMWJkNlwvZGExMGphbi1iZGVkNTc2OS00MDk1LTQyZGYtYmZhNi1jNTViOWU3ZDM2ZmEucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.r6uIp85b7M5LXY-kqiDq5rhqcbowWVHFfTVMe87osJY" alt="google music" style="width:240px; height:auto; margin-bottom:24px; object-fit:contain;" loading="lazy">
+          <h3 style="margin:0 0 8px;">Google Music</h3>
+          <span style="color:#5f6368; font-size:13px; margin-bottom:5px;">With the Google Music app, enjoy over 100 million songs at your fingertips.</span>
+          <strong style="font-size: 1.09em;"></strong>
+          <a href="/googlemusic" class="btn primary" style="margin-top:16px;">Listen Now</a>
+        </div>
+
+      </div>
+    </section>
+    <script>
+      // The below script is replaced by the global requirement to intercept all clicks for login/signup prompt.
+    </script>
+  </main>
+
+  <section class="newsletter-section">
+      <span class="material-symbols-outlined icon">label</span>
+      <h2>Master Microservices with Multicloud DevOps – Live Projects Veera Sir | Naresh iT (New Batch Starting Soon).</h2>
+  </section>
+  <section class="disclaimers-section">
+      <ul>
+          <li>
+              All orders delivered free of charge will use the lowest-cost shipping option, unless stated otherwise.
+          </li>
+          <li>
+              Pixel devices generally receive Pixel Drops during the applicable Android update and support periods for the phone. For details, see 
+              <a href="https://g.co/pixel/updates" rel="noopener" target="_blank">g.co/pixel/updates</a>.
+              Availability of some Pixel Drops may vary by phone and device model.
+          </li>
+      </ul>
+  </section>
+
+  <footer class="footer" style="text-align:center; padding:24px 0;">
+      <div class="logo-google-store" style="justify-content:center;">
+          <img src="https://latestlogo.com/wp-content/uploads/2024/01/google-store-logo.png" alt="Google Store Logo" style="height:34px; vertical-align:middle; margin-right:8px;" />
+      </div>
+      <div style="margin-top:12px; font-size:15px; color: #444;">
+          
+      </div>
+  </footer>
+
+  <script>
+    // === Configuration ===
+     //const API_BASE = "http://54.187.59.60:5000/api";  //  this is for  public deployment
+    const API_BASE = "/api";   // this is for proxy deployment
+    const USER_KEY = "googleStoreUser";
+    const LOGIN_EXPIRE_MINUTES = 5; 
+
+    let signupStep = 1; 
+    let loginStep = 1;
+    let isLoggedIn = false;
+
+    // Element References
+    const msgBox = document.getElementById("msg");
+    const navbarProfile = document.getElementById('navbarProfile');
+    const navbarAvatar = document.getElementById('navbarAvatar');
+    const navbarProfileUsername = document.getElementById('navbarProfileUsername');
+    const navbarProfileEmail = document.getElementById('navbarProfileEmail');
+    const navbarLogoutBtn = document.getElementById('navbarLogoutBtn');
+    const navbarLoginBtn = document.getElementById('navbar-login-btn');
+    const navbarSignupBtn = document.getElementById('navbar-signup-btn');
+
+    // --- UI State Management ---
+
+    function onUserAuthenticated({ username, email }) {
+      if (navbarAvatar) navbarAvatar.textContent = username?.charAt(0).toUpperCase() || '?';
+      if (navbarProfileUsername) navbarProfileUsername.textContent = username || '';
+      if (navbarProfileEmail) navbarProfileEmail.textContent = email || '';
+      
+      if (navbarProfile) {
+        navbarProfile.classList.add('show');
+        navbarProfile.style.display = 'flex';
+      }
+      if (navbarLoginBtn) navbarLoginBtn.style.display = 'none';
+      if (navbarSignupBtn) navbarSignupBtn.style.display = 'none';
+      
+      isLoggedIn = true;
+      saveUserSession({ username, email });
+    }
+
+    function onUserLoggedOut() {
+      if (navbarProfile) {
+        navbarProfile.classList.remove('show');
+        navbarProfile.style.display = 'none';
+      }
+      if (navbarLoginBtn) navbarLoginBtn.style.display = 'inline-block';
+      if (navbarSignupBtn) navbarSignupBtn.style.display = 'inline-block';
+      
+      isLoggedIn = false;
+      clearUserSession();
+    }
+
+    function logout() {
+      toggleForm("login");
+      const profileModal = document.getElementById("profile");
+      if (profileModal) profileModal.style.display = "none";
+      document.getElementById("switchText").style.display = "block";
+      document.getElementById("formTitle").textContent = "Login";
+      showMessage("Logged out successfully.", "success");
+      onUserLoggedOut();
+    }
+
+    // --- Layout & Modal Logic ---
+
+    function toggleForm(mode) {
+        signupStep = 1;
+        loginStep = 1;
+        
+        const suInputs = document.getElementById("su-inputs");
+        const liInputs = document.getElementById("li-inputs");
+        const suOtpBlock = document.getElementById("su-otp-block");
+        const liOtpBlock = document.getElementById("li-otp-block");
+
+        // FIX: Force vertical stacking to prevent the horizontal overflow in your screenshot
+        [suInputs, liInputs, suOtpBlock, liOtpBlock].forEach(el => {
+            if (el) {
+                el.style.flexDirection = "column";
+                el.style.gap = "10px"; // Adds nice spacing between inputs
+            }
+        });
+
+        suInputs.style.display = "flex";
+        suOtpBlock.style.display = "none";
+        document.getElementById("su-btn").innerText = "Create Account";
+        
+        liInputs.style.display = "flex";
+        liOtpBlock.style.display = "none";
+        document.getElementById("li-btn").innerText = "Login";
+
+        const signupForm = document.getElementById("signupForm");
+        const loginForm = document.getElementById("loginForm");
+        const title = document.getElementById("formTitle");
+        const switchText = document.getElementById("switchText");
+
+        msgBox.style.display = "none";
+
+        if (mode === "login") {
+            signupForm.style.display = "none";
+            loginForm.style.display = "flex";
+            title.textContent = "Login";
+            switchText.innerHTML = `Don't have an account? <a href="#" onclick="toggleForm('signup'); return false;">Sign up</a>`;
+        } else {
+            loginForm.style.display = "none";
+            signupForm.style.display = "flex";
+            title.textContent = "Sign Up";
+            switchText.innerHTML = `Already have an account? <a href="#" onclick="toggleForm('login'); return false;">Login</a>`;
+        }
+        switchText.style.display = "block";
+    }
+
+    // --- API Interactions (Signup & Login) ---
+
+    async function signup() {
+        const username = document.getElementById("su-username").value.trim();
+        const email = document.getElementById("su-email").value.trim();
+        const password = document.getElementById("su-password").value.trim();
+        const otp = document.getElementById("su-otp").value.trim();
+
+        if (signupStep === 1) {
+            if (!username || !email || !password) return showMessage("All fields required.", "error");
+            try {
+                const res = await fetch(`${API_BASE}/signup/request`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    signupStep = 2;
+                    document.getElementById("su-inputs").style.display = "none";
+                    document.getElementById("su-otp-block").style.display = "flex"; // Changed to flex
+                    document.getElementById("su-btn").innerText = "Verify & Register";
+                    showMessage("OTP sent to your email!", "success");
+                } else { showMessage(data.error || "Signup failed", "error"); }
+            } catch (err) { showMessage("Server error.", "error"); }
+        } else {
+            try {
+                const res = await fetch(`${API_BASE}/signup/verify`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, otp })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showMessage("Registration successful!", "success");
+                    setTimeout(() => {
+                        onUserAuthenticated({ username, email });
+                        closeAuthModal();
+                    }, 1000);
+                } else { showMessage(data.error || "Invalid OTP", "error"); }
+            } catch (err) { showMessage("Server error.", "error"); }
+        }
+    }
+
+    async function login() {
+        const email = document.getElementById("li-email").value.trim();
+        const password = document.getElementById("li-password").value.trim();
+        const otp = document.getElementById("li-otp").value.trim();
+
+        if (loginStep === 1) {
+            if (!email || !password) return showMessage("Fields required.", "error");
+            try {
+                const res = await fetch(`${API_BASE}/login/request`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    loginStep = 2;
+                    document.getElementById("li-inputs").style.display = "none";
+                    document.getElementById("li-otp-block").style.display = "flex"; // Changed to flex
+                    document.getElementById("li-btn").innerText = "Verify Security Code";
+                    showMessage("OTP sent to email!", "success");
+                } else { showMessage(data.error || "Login failed", "error"); }
+            } catch (err) { showMessage("Server error.", "error"); }
+        } else {
+            try {
+                const res = await fetch(`${API_BASE}/login/verify`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, otp })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showMessage("Login successful!", "success");
+                    onUserAuthenticated({ username: data.user.username, email: data.user.email });
+                    setTimeout(closeAuthModal, 800);
+                } else { showMessage(data.error || "Invalid OTP", "error"); }
+            } catch (err) { showMessage("Server error.", "error"); }
+        }
+    }
+
+    // --- Storage Helpers ---
+    function saveUserSession(user) {
+      const data = { ...user, t: Date.now() };
+      localStorage.setItem(USER_KEY, JSON.stringify(data));
+    }
+    function loadUserSession() {
+      const data = localStorage.getItem(USER_KEY);
+      if (!data) return null;
+      try {
+        const parsed = JSON.parse(data);
+        if (Date.now() - parsed.t > LOGIN_EXPIRE_MINUTES * 60000) {
+          localStorage.removeItem(USER_KEY);
+          return null;
+        }
+        return { username: parsed.username, email: parsed.email };
+      } catch (e) { return null; }
+    }
+    function clearUserSession() { localStorage.removeItem(USER_KEY); }
+    function showMessage(text, type) {
+      msgBox.textContent = text;
+      msgBox.className = `message ${type}`;
+      msgBox.style.display = "block";
+      setTimeout(() => msgBox.style.display = "none", 4000);
+    }
+    function openAuthModal(mode = "signup") {
+      toggleForm(mode);
+      document.getElementById('authModalOverlay').classList.add('open');
+    }
+    function closeAuthModal() {
+      document.getElementById('authModalOverlay').classList.remove('open');
+    }
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', function() {
+      const remembered = loadUserSession();
+      if (remembered) onUserAuthenticated(remembered);
+
+      if(navbarLoginBtn) navbarLoginBtn.onclick = () => { openAuthModal('login'); return false; };
+      if(navbarSignupBtn) navbarSignupBtn.onclick = () => { openAuthModal('signup'); return false; };
+      if(navbarLogoutBtn) navbarLogoutBtn.onclick = () => logout();
+      
+      const closeBtn = document.getElementById('closeAuthModal');
+      if(closeBtn) closeBtn.onclick = () => closeAuthModal();
+
+      document.body.addEventListener('click', function(event) {
+        if (isLoggedIn) return;
+        let target = event.target;
+        if (target.closest('#authCard') || target.closest('#authModalOverlay')) return;
+        if (target === navbarLoginBtn || target === navbarSignupBtn) return;
+
+        let isInteractive = ['a', 'button', 'video', 'input'].includes(target.tagName.toLowerCase()) || target.classList.contains('cta-button');
+        if (isInteractive) {
+          event.preventDefault();
+          showMessage("Please login to access this feature.", "error");
+          setTimeout(() => openAuthModal('login'), 600);
+        }
+      }, true);
+    });
+</script>
+
+</body>
+</html>
+
+

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Google – Google Groceries</title>
+  <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png">
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #6c5ce7;      /* Moon purple */
+      --primary-dark: #5f3dc4;
+      --accent: #fd79a8;       /* Soft pink */
+      --bg: #0a0a1a;
+      --card-bg: rgba(20,20,40,0.85);
+      --text: #e6e6ff;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 12px 32px rgba(0,0,0,0.35);
+      --radius: 20px;
+      --transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    [data-theme="light"] {
+      --bg: #f8f9ff;
+      --card-bg: rgba(255,255,255,0.9);
+      --text: #2d1b69;
+      --border: rgba(0,0,0,0.1);
+      --shadow: 0 12px 32px rgba(0,0,0,0.12);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x:hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    .container { max-width: 1360px; margin:auto; padding:0 1rem; }
+
+    /* Header – Parallax */
+    header {
+      position: sticky; top:0; z-index:1000;
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1f);
+      color: white; padding:1rem 0;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .header-inner {
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .logo {
+      font-size:2.2rem; font-weight:800; letter-spacing:-1px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .tagline { font-size:0.9rem; opacity:0.8; margin-left:0.5rem; }
+    .header-actions { display:flex; gap:1rem; align-items:center; }
+    .theme-toggle, #cart-toggle {
+      background:rgba(255,255,255,0.15); border:none; color:white;
+      width:44px; height:44px; border-radius:50%; cursor:pointer;
+      font-size:1.3rem; transition:var(--transition);
+      backdrop-filter:blur(8px);
+    }
+    .theme-toggle:hover, #cart-toggle:hover {
+      background:rgba(255,255,255,0.25); transform:scale(1.12);
+    }
+
+    /* Controls */
+    .controls { margin:2.5rem 0; display:flex; flex-direction:column; gap:1.2rem; }
+    .search-wrapper { position:relative; }
+    #search-input {
+      width:100%; padding:1rem 1rem 1rem 3.2rem; font-size:1rem;
+      border:1px solid var(--border); border-radius:var(--radius);
+      background:var(--card-bg); backdrop-filter:blur(12px);
+      color:var(--text); transition:var(--transition);
+    }
+    #search-input:focus {
+      outline:none; border-color:var(--primary);
+      box-shadow:0 0 0 4px rgba(108,92,231,0.25);
+    }
+    .search-icon {
+      position:absolute; left:1rem; top:50%; transform:translateY(-50%);
+      color:#aaa; pointer-events:none;
+    }
+
+    .categories {
+      display:flex; flex-wrap:wrap; gap:.8rem;
+    }
+    .cat-btn {
+      padding:.65rem 1.4rem; border-radius:50px; border:none;
+      background:var(--card-bg); color:var(--text);
+      font-weight:600; cursor:pointer; transition:var(--transition);
+      backdrop-filter:blur(8px); box-shadow:0 3px 10px rgba(0,0,0,0.1);
+    }
+    .cat-btn.active {
+      background:var(--primary); color:white;
+      transform:translateY(-3px);
+      box-shadow:0 6px 16px rgba(108,92,231,0.4);
+    }
+    .cat-btn:hover:not(.active) {
+      background:rgba(108,92,231,0.15); transform:translateY(-2px);
+    }
+
+    /* Products */
+    .products {
+      display:grid; gap:2rem;
+      grid-template-columns:repeat(auto-fill, minmax(270px,1fr));
+      margin:2rem 0;
+    }
+    .card {
+      background:var(--card-bg); border-radius:var(--radius);
+      overflow:hidden; cursor:pointer;
+      box-shadow:var(--shadow); transition:var(--transition);
+      backdrop-filter:blur(14px);
+      opacity:0; transform:translateY(40px);
+    }
+    .card:hover {
+      transform:translateY(-10px) scale(1.03);
+      box-shadow:0 20px 45px rgba(0,0,0,0.25);
+    }
+    .card img {
+      width:100%; height:190px; object-fit:cover;
+      transition:transform 0.5s ease;
+    }
+    .card:hover img { transform:scale(1.1); }
+    .card-body { padding:1.3rem; }
+    .card-title {
+      font-size:1.15rem; font-weight:700; margin-bottom:.4rem;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .price {
+      font-size:1.35rem; color:var(--primary); font-weight:800;
+    }
+    .add-btn {
+      margin-top:1rem; background:var(--primary); color:white;
+      border:none; padding:.75rem; border-radius:14px;
+      width:100%; font-weight:600; cursor:pointer;
+      transition:var(--transition); position:relative; overflow:hidden;
+    }
+    .add-btn:hover { background:var(--primary-dark); transform:translateY(-2px); }
+    .add-btn:active { transform:scale(0.97); }
+
+    /* Cart Sidebar */
+    .cart {
+      position:fixed; right:-420px; top:0; width:400px; height:100vh;
+      background:var(--card-bg); backdrop-filter:blur(16px);
+      box-shadow:-10px 0 40px rgba(0,0,0,0.3); z-index:1100;
+      padding:1.8rem; overflow-y:auto;
+      transition:right 0.55s cubic-bezier(0.22,0.61,0.36,1);
+    }
+    .cart.open { right:0; }
+    .cart-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:1.5rem; padding-bottom:1rem;
+      border-bottom:1px solid var(--border);
+    }
+    .cart-header h2 { font-size:1.6rem; font-weight:700; }
+    .close-cart { background:none; border:none; font-size:1.9rem; cursor:pointer; color:#bbb; }
+
+    .cart-item {
+      display:flex; align-items:center; gap:1.2rem; padding:1rem 0;
+      border-bottom:1px solid var(--border); opacity:0; transform:translateX(60px);
+    }
+    .cart-item img { width:75px; height:75px; object-fit:cover; border-radius:14px; }
+    .cart-item .info { flex:1; }
+    .cart-item .info div:first-child { font-weight:600; }
+    .qty-controls {
+      display:flex; align-items:center; gap:.6rem; background:rgba(255,255,255,0.08);
+      padding:.35rem .5rem; border-radius:50px;
+    }
+    .qty-btn {
+      width:34px; height:34px; border:none; border-radius:50%;
+      background:rgba(255,255,255,0.15); color:white;
+      font-weight:bold; cursor:pointer; transition:var(--transition);
+    }
+    .qty-btn:hover { background:var(--primary); }
+
+    .cart-total {
+      margin-top:1.8rem; font-size:1.4rem; font-weight:700; text-align:right;
+      padding:1rem 0; border-top:2px dashed var(--border);
+    }
+    .checkout-btn {
+      margin-top:1.2rem; background:var(--accent); color:white;
+      border:none; padding:1rem; border-radius:var(--radius);
+      width:100%; font-weight:700; font-size:1.15rem; cursor:pointer;
+      transition:var(--transition);
+    }
+    .checkout-btn:hover {
+      background:#e84373; transform:translateY(-3px);
+      box-shadow:0 12px 24px rgba(253,121,168,0.35);
+    }
+
+    /* Modal */
+    .modal {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75);
+      justify-content:center; align-items:center; z-index:1200;
+      backdrop-filter:blur(10px);
+    }
+    .modal.open { display:flex; }
+    .modal-content {
+      background:var(--card-bg); padding:2.8rem; border-radius:var(--radius);
+      max-width:460px; width:90%; text-align:center; box-shadow:var(--shadow);
+      transform:scale(0.65); opacity:0;
+      /* Add extra space at the bottom for receipt buttons */
+      padding-bottom: 2.7rem;
+    }
+
+    /* Modal receipt buttons */
+    .modal-receipt-actions {
+      margin-top: 1.7rem;
+      display: flex;
+      gap: 1.1rem;
+      justify-content: center;
+    }
+    .modal-receipt-actions button {
+      padding: .7rem 1.2rem;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    .modal-receipt-actions button:hover {
+      background: var(--accent);
+    }
+
+    /* Toast */
+    .toast {
+      position:fixed; bottom:2.5rem; left:50%; transform:translateX(-50%);
+      background:var(--primary); color:white; padding:.9rem 1.8rem;
+      border-radius:50px; font-weight:600; z-index:1300;
+      opacity:0; pointer-events:none; transition:all 0.4s ease;
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(-12px); }
+
+    @media (max-width:768px) {
+      .cart { width:100%; right:-100%; }
+      .categories { justify-content:center; }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-inner">
+      <div style="display:flex; align-items:center;">
+        <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+          <!-- Google Logo Image -->
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png" 
+               alt="Google G Logo" width="30" height="30" style="vertical-align:middle; border-radius:6px; background:transparent;"/>
+               Grocery
+        <div class="tagline">Fresh under the moonlight</div>
+      </div>
+      <div class="header-actions" style="position: absolute; top: 24px; right: 32px; z-index: 2000;">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <!-- Moon/Sun Icon SVG (Moon default, swap via JS) -->
+          <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 12.79A9 9 0 0 1 11.21 3.01a1 1 0 0 0-1.02-1.33A10 10 0 1 0 22.32 13.81a1 1 0 0 0-1.33-1.02ZM12 21a8 8 0 0 1-1-15.94V5a7 7 0 1 0 8 8h-.06A7.93 7.93 0 0 1 12 21Z" fill="currentColor"/></svg>
+        </button>
+        <button id="cart-toggle" aria-label="Open cart" style="display: flex; align-items: center; gap: 0.4rem;">
+          <!-- Cart Icon SVG -->
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.16 15l.84-2h7l.94 2H7.16zM17 6a1 1 0 0 0-1-1H7.42l-.34-2.68A1 1 0 0 0 6.09 2H2v2h2.38l1.72 13.62c.1.76.77 1.38 1.55 1.38H19a1 1 0 0 0 0-2H7.38l-.32-2H17a1 1 0 0 0 .96-.74l2-7A1 1 0 0 0 19 5H7.62L7.16 3h9.34A1 1 0 0 0 17 6zm-7.46 5l-1-4h11.12l-1.5 4H9.54z" fill="currentColor"/></svg>
+          <span id="cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Controls -->
+  <section class="container controls">
+    <div class="search-wrapper">
+      <span class="search-icon">Search</span>
+      <input type="text" id="search-input" placeholder="Find fruits, veggies, dairy…" aria-label="Search products"/>
+    </div>
+    <div class="categories" id="category-list"></div>
+  </section>
+
+  <!-- Products -->
+  <section class="container products" id="product-list"></section>
+
+  <!-- Cart -->
+  <aside class="cart" id="cart" aria-label="Shopping cart">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="close-cart" id="close-cart" aria-label="Close cart">×</button>
+    </div>
+    <div id="cart-items"></div>
+    <div class="cart-total">Total: $<span id="cart-total">0.00</span></div>
+    <button class="checkout-btn" id="checkout-btn">Checkout</button>
+  </aside>
+
+  <!-- Checkout Modal -->
+  <div class="modal" id="checkout-modal">
+    <div class="modal-content" id="modal-content-root">
+      <h3>Order Confirmed!</h3>
+      <p>Thank you for shopping with MoonCart. Your fresh items are on the way.</p>
+      <div class="modal-receipt-actions" style="display:none;" id="receipt-actions">
+        <button id="view-receipt-btn">View Receipt</button>
+        <button id="download-receipt-btn">Download Receipt</button>
+      </div>
+      <button id="close-modal">Continue Shopping</button>
+    </div>
+  </div>
+
+  <!-- Receipt Modal for viewing receipt -->
+  <div class="modal" id="receipt-modal">
+    <div class="modal-content" id="receipt-modal-content" style="max-width:560px;text-align:left;">
+      <h3 style="text-align:center;margin-bottom:1.2rem;">Order Receipt</h3>
+      <div id="receipt-content" style="background:rgba(255,255,255,0.08);border-radius:14px;padding:1.3rem 1rem 1rem 1.3rem;box-sizing:border-box;margin-bottom:2rem;font-size:1.06rem;max-height:380px;overflow:auto;"></div>
+      <button id="close-receipt-modal" style="display:block;margin:0 auto;background:var(--accent);color:#fff;border:none;padding:.7rem 1.7rem;border-radius:13px;font-weight:700;font-size:1rem;cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ==== DATA ====
+    const rawProducts = [
+      // Fruits (4 items)
+      { id:1, name:"Cosmic Apples (1 kg)", price:3.29, img:"https://i5.walmartimages.com/seo/Fresh-Cosmic-Apples-3-lb-Bag_58c1243d-980a-4f63-95ff-b027a8799966.597f9b87feb4aec17fbfe0d8b2a6adaa.png", cat:"Fruits" },
+      { id:2, name:"Lunar Bananas (bunch)", price:1.69, img:"https://thumbs.dreamstime.com/b/large-bunch-yellow-bananas-hanging-banana-tree-357067936.jpg?w=768", cat:"Fruits" },
+      { id:3, name:"Starlight Oranges (1 kg)", price:3.49, img:"https://supersavings.lk/wp-content/uploads/2021/05/Orange-1.png", cat:"Fruits" },
+      { id:13, name:"Pluto Pears (1 kg)", price:2.95, img:"https://tse1.mm.bing.net/th/id/OIP.N8h4wjceQxLttep9PnQVxAHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3", cat:"Fruits" },
+      // Vegetables (4 items)
+      { id:4, name:"Meteor Carrots (1 kg)", price:1.39, img:"https://www.butter-n-thyme.com/wp-content/uploads/2022/10/Baltimore-Carrots-types-of-carrots-768x1152.jpg", cat:"Vegetables" },
+      { id:5, name:"Nebula Broccoli (500 g)", price:2.79, img:"https://nebula.org/blog/wp-content/uploads/2023/03/broccoli.jpg", cat:"Vegetables" },
+      { id:6, name:"Galaxy Spinach (200 g)", price:1.99, img:"https://th.bing.com/th/id/R.1f0c87a96ca8aa4823ec27e2ccb5956b?rik=mZ0ISGUVrDqF0A&riu=http%3a%2f%2frukmini1.flixcart.com%2fimage%2f300%2f300%2fxif0q%2fplant-seed%2fw%2fg%2fn%2f1-rty20-greenry-original-imah8gd4p2gg7zcw.jpeg&ehk=vmEMk5t0WOajT3LFoLyei9KoNX7AeBvF2SOViJ13po0%3d&risl=&pid=ImgRaw&r=0", cat:"Vegetables" },
+      { id:14, name:"Celestial Tomatoes (500 g)", price:2.15, img:"https://www.epicgardening.com/wp-content/uploads/2024/06/Ripening-branch-of-red-and-green-tomato.jpeg", cat:"Vegetables" },
+      // Dairy (4 items)
+      { id:7, name:"Moon Milk (1 L)", price:1.29, img:"https://st2.depositphotos.com/1001877/12383/i/600/depositphotos_123834700-stock-photo-milk-carton-packs-isolated-on.jpg", cat:"Dairy" },
+      { id:8, name:"Stellar Cheddar (200 g)", price:4.99, img:"https://media.cnn.com/api/v1/images/stellar/prod/211206051811-21-europe-best-cheeses-cheddar-somerset.jpg?q=h_2813,w_5000,x_0,y_0/h_447", cat:"Dairy" },
+      { id:15, name:"Milky Galaxy Yogurt (400 g)", price:2.25, img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=420&q=80", cat:"Dairy" },
+      { id:16, name:"Astronaut Butter (250 g)", price:3.49, img:"https://foodiosity.com/wp-content/uploads/2021/04/yellow-butter.jpg", cat:"Dairy" },
+      // Bakery (4 items)
+      { id:9, name:"Orbit Bread Loaf", price:2.79, img:"https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=420&q=80", cat:"Bakery" },
+      { id:17, name:"Galactic Croissant", price:1.49, img:"https://assets.wsimgs.com/wsimgs/rk/images/dp/wcm/202227/0015/galaxy-classic-chocolate-croissants-set-of-30-o.jpg", cat:"Bakery" },
+      { id:18, name:"Nebula Baguette", price:2.29, img:"https://assets-eu-01.kc-usercontent.com/559bb7d3-88a4-01c1-79a3-dd4d5b2d2bb0/b952b71e-20ff-4434-9486-5aa0b4378145/1-French-Baguettes.jpg", cat:"Bakery" },
+      { id:19, name:"Meteor Muffins (2 pcs)", price:1.99, img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=420&q=80", cat:"Bakery" },
+      // Meat (4 items)
+      { id:10, name:"Comet Chicken (1 kg)", price:8.49, img:"https://englishmeatempire.com/wp-content/uploads/2023/05/images-51.jpeg", cat:"Meat" },
+      { id:20, name:"Star Steak (400 g)", price:9.99, img:"https://www.homewetbar.com/blog/wp-content/uploads/2014/04/how-to-grill-steak.jpg", cat:"Meat" },
+      { id:21, name:"Moon Mince (500 g)", price:6.79, img:"https://www.hanifaafrozen.sg/media/catalog/product/m/i/mince-meat2.jpg", cat:"Meat" },
+      { id:22, name:"Meteor Sausage Pack", price:4.65, img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=420&q=80", cat:"Meat" },
+      // Pantry (4 items)
+      { id:11, name:"Pasta Nebula (500 g)", price:1.99, img:"https://centslessdeals.com/wp-content/uploads/2022/09/Skillet-Pasta-With-Ground-Beef-TheShortcutKitchen-9-1024x1536.jpg", cat:"Pantry" },
+      { id:12, name:"Marinara Meteor", price:1.49, img:"https://tse1.mm.bing.net/th/id/OIP.16xXLRm_Bwgnp8B5g-XTPwHaLH?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3", cat:"Pantry" },
+      { id:23, name:"Rocket Rice (1 kg)", price:2.19, img:"https://wallpapers.com/images/hd/rice-background-wqjdq3dvpktg1fal.jpg", cat:"Pantry" },
+      { id:24, name:"Astro Oil (1 L)", price:3.29, img:"https://cdn-prod.medicalnewstoday.com/content/images/hero/324/324844/324844_1100.jpg", cat:"Pantry" }
+    ];
+
+    const categories = ["All", ...new Set(rawProducts.map(p => p.cat))].sort();
+
+    // ==== STATE ====
+    let cart = JSON.parse(localStorage.getItem('mooncart_cart') || '[]');
+    let currentCategory = "All";
+    let searchTerm = "";
+    let lastReceipt = null; // Store receipt after purchase
+
+    // ==== DOM ====
+    const els = {
+      productList: document.getElementById('product-list'),
+      searchInput: document.getElementById('search-input'),
+      catList: document.getElementById('category-list'),
+      cartEl: document.getElementById('cart'),
+      cartToggle: document.getElementById('cart-toggle'),
+      closeCart: document.getElementById('close-cart'),
+      cartItems: document.getElementById('cart-items'),
+      cartTotal: document.getElementById('cart-total'),
+      cartCount: document.getElementById('cart-count'),
+      checkoutBtn: document.getElementById('checkout-btn'),
+      modal: document.getElementById('checkout-modal'),
+      closeModal: document.getElementById('close-modal'),
+      toast: document.getElementById('toast'),
+      themeToggle: document.getElementById('theme-toggle'),
+      receiptActions: document.getElementById('receipt-actions'),
+      viewReceiptBtn: document.getElementById('view-receipt-btn'),
+      downloadReceiptBtn: document.getElementById('download-receipt-btn'),
+      receiptModal: document.getElementById('receipt-modal'),
+      receiptContent: document.getElementById('receipt-content'),
+      closeReceiptModal: document.getElementById('close-receipt-modal')
+    };
+
+    // ==== UTILS ====
+    const showToast = (msg) => {
+      els.toast.textContent = msg;
+      els.toast.classList.add('show');
+      setTimeout(() => els.toast.classList.remove('show'), 2200);
+    };
+    const saveCart = () => localStorage.setItem('mooncart_cart', JSON.stringify(cart));
+
+    function formatDate(d) {
+      return d.toLocaleString
+        ? d.toLocaleString(undefined, {hour12: false}).replace(",", "")
+        : d.toString();
+    }
+
+    function buildReceiptObj(items) {
+      // items: array of {product, qty}
+      let total = 0;
+      let receiptLines = [];
+      items.forEach(i => {
+        total += i.product.price * i.qty;
+        receiptLines.push({
+          name: i.product.name,
+          qty: i.qty,
+          priceEach: i.product.price,
+          total: i.product.price * i.qty
+        });
+      });
+      return {
+        date: formatDate(new Date()),
+        lines: receiptLines,
+        total: total
+      };
+    }
+
+    function renderReceiptTable(receiptObj) {
+      // outputs simple HTML for viewing
+      let out = '';
+      out += `<div style="margin-bottom:0.3rem;text-align:right;font-size:0.92em;color:#a1a1b1;">${receiptObj.date}</div>`;
+      out += `<table style="width:100%; border-collapse:collapse; font-size:1rem;">`;
+      out += "<thead><tr><th align='left'>Product</th><th>Qty</th><th>Each</th><th align='right'>Total</th></tr></thead><tbody>";
+      for(const line of receiptObj.lines) {
+        out += `<tr>
+          <td>${line.name}</td>
+          <td style="text-align:center;">${line.qty}</td>
+          <td style="text-align:center;">$${line.priceEach.toFixed(2)}</td>
+          <td style="text-align:right;">$${line.total.toFixed(2)}</td>
+        </tr>`;
+      }
+      out += "</tbody></table>";
+      out += `<div style="border-top:1px dashed #888; margin-top:1.1em;padding-top:.6em;text-align:right;font-weight:700;">Total: $${receiptObj.total.toFixed(2)}</div>`;
+      out += "<div style='font-size:0.98em; margin-top:1em;color:#c0c0ff;'>Thank you for your purchase from MoonCart!</div>";
+      return out;
+    }
+
+    function receiptText(receiptObj) {
+      // For downloading as .txt
+      let text = `MoonCart Order Receipt\nDate: ${receiptObj.date}\n\n`;
+      text += "Product                Qty   Each     Total\n";
+      for(const l of receiptObj.lines) {
+        // pad name 20, qty 5, each 8, total
+        let n = l.name.padEnd(20,' ').slice(0,20);
+        let q = String(l.qty).padStart(3,' ');
+        let pe = ('$' + l.priceEach.toFixed(2)).padStart(7,' ');
+        let tot = ('$' + l.total.toFixed(2)).padStart(8,' ');
+        text += `${n} ${q}  ${pe} ${tot}\n`;
+      }
+      text += `\nTotal: $${receiptObj.total.toFixed(2)}\n`;
+      text += "\nThank you for shopping with MoonCart!\n";
+      return text;
+    }
+
+    function showReceiptModal() {
+      if (!lastReceipt) return;
+      els.receiptContent.innerHTML = renderReceiptTable(lastReceipt);
+      els.receiptModal.classList.add("open");
+      gsap.fromTo("#receipt-modal-content",
+        { scale: 0.6, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.45, ease: "power3.out" }
+      );
+    }
+    function closeReceiptModal() {
+      els.receiptModal.classList.remove("open");
+    }
+
+    function downloadReceipt() {
+      if(!lastReceipt) return;
+      const blob = new Blob([receiptText(lastReceipt)], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `MoonCart-Receipt-${Date.now()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+
+    // ==== FILTER ====
+    const getFiltered = () => rawProducts.filter(p => {
+      const catOk = currentCategory === "All" || p.cat === currentCategory;
+      const searchOk = p.name.toLowerCase().includes(searchTerm);
+      return catOk && searchOk;
+    });
+
+    // ==== CATEGORIES ====
+    const renderCategories = () => {
+      els.catList.innerHTML = '';
+      categories.forEach(c => {
+        const b = document.createElement('button');
+        b.className = `cat-btn ${currentCategory === c ? 'active' : ''}`;
+        b.textContent = c;
+        b.onclick = () => {
+          currentCategory = c;
+          renderProducts(getFiltered());
+          renderCategories();
+        };
+        els.catList.appendChild(b);
+      });
+    };
+
+    // ==== PRODUCTS (GSAP) ====
+    const renderProducts = (list) => {
+      els.productList.innerHTML = '';
+      list.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${p.img}" alt="${p.name}" loading="lazy">
+          <div class="card-body">
+            <div class="card-title">${p.name}</div>
+            <div class="price">$${p.price.toFixed(2)}</div>
+            <button class="add-btn" data-id="${p.id}">Add to Cart</button>
+          </div>
+        `;
+        card.querySelector('.add-btn').onclick = () => addToCart(p);
+        els.productList.appendChild(card);
+
+        gsap.fromTo(card,
+          { y: 60, opacity: 0, scale: 0.88 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.7, delay: i * 0.07, ease: "back.out(1.5)" }
+        );
+      });
+    };
+
+    // ==== CART ====
+    const addToCart = (prod) => {
+      const it = cart.find(i => i.product.id === prod.id);
+      if (it) it.qty++; else cart.push({ product: prod, qty: 1 });
+      saveCart();
+      updateCartUI();
+      showToast(`${prod.name} added!`);
+      gsap.to(els.cartToggle, { scale: 1.35, duration: 0.2, yoyo: true, repeat: 1 });
+    };
+
+    const changeQty = (id, delta) => {
+      const it = cart.find(i => i.product.id === id);
+      if (it) {
+        it.qty += delta;
+        if (it.qty <= 0) cart = cart.filter(i => i.product.id !== id);
+        saveCart();
+        updateCartUI();
+      }
+    };
+
+    const updateCartUI = () => {
+      els.cartItems.innerHTML = '';
+      let total = 0, count = 0;
+      cart.forEach((i, idx) => {
+        const {product, qty} = i;
+        total += product.price * qty;
+        count += qty;
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+          <img src="${product.img}" alt="${product.name}">
+          <div class="info">
+            <div>${product.name}</div>
+            <div>$${product.price.toFixed(2)} × ${qty}</div>
+          </div>
+          <div class="qty-controls">
+            <button class="qty-btn" data-d="-1">–</button>
+            <span>${qty}</span>
+            <button class="qty-btn" data-d="1">+</button>
+          </div>
+        `;
+        div.querySelectorAll('.qty-btn').forEach(b => {
+          b.onclick = () => {
+            changeQty(product.id, Number(b.dataset.d));
+            gsap.fromTo(b, { scale: 0.75 }, { scale: 1, duration: 0.2 });
+          };
+        });
+        els.cartItems.appendChild(div);
+        gsap.fromTo(div, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, delay: idx * 0.06 });
+      });
+      els.cartTotal.textContent = total.toFixed(2);
+      els.cartCount.textContent = count;
+    };
+
+    // ==== EVENTS ====
+    els.searchInput.addEventListener('input', e => {
+      searchTerm = e.target.value.toLowerCase();
+      renderProducts(getFiltered());
+    });
+
+    els.cartToggle.onclick = () => {
+      const open = els.cartEl.classList.toggle('open');
+      gsap.to(els.cartEl, { x: open ? -400 : 400, duration: 0.55, ease: "power3.inOut" });
+    };
+    els.closeCart.onclick = () => {
+      gsap.to(els.cartEl, { x: 400, duration: 0.55, ease: "power3.in", onComplete: () => els.cartEl.classList.remove('open') });
+    };
+
+    // --- Modified checkoutBtn event to add receipt actions ---
+    els.checkoutBtn.onclick = () => {
+      if (!cart.length) return showToast("Cart is empty!");
+      // Calculate and store last receipt before clearing cart
+      lastReceipt = buildReceiptObj(cart);
+      els.receiptActions.style.display = "flex";
+      els.modal.classList.add('open');
+      gsap.fromTo(".modal-content",
+        { scale: 0.6, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1,0.6)" }
+      );
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      cart = [];
+      saveCart();
+      updateCartUI();
+    };
+
+    els.closeModal.onclick = () => {
+      els.modal.classList.remove('open');
+      els.receiptActions.style.display = "none"; // reset for next time
+    };
+
+    // Receipt buttons
+    els.viewReceiptBtn.onclick = () => {
+      showReceiptModal();
+    };
+    els.downloadReceiptBtn.onclick = () => {
+      downloadReceipt();
+    };
+
+    // Receipt modal close
+    els.closeReceiptModal.onclick = () => {
+      closeReceiptModal();
+    };
+    // Allow clicking outside on .modal to dismiss receipt modal
+    window.addEventListener("click", function(e){
+      if (e.target === els.receiptModal) closeReceiptModal();
+      if (e.target === els.modal) els.modal.classList.remove("open");
+    });
+
+    // Theme toggle
+    els.themeToggle.onclick = () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      els.themeToggle.textContent = isDark ? 'Sun' : 'Moon';
+    };
+
+    // ==== INIT ====
+    renderCategories();
+    renderProducts(rawProducts);
+    updateCartUI();
+
+    // Parallax header on scroll
+    gsap.to("header", {
+      yPercent: -30,
+      ease: "none",
+      scrollTrigger: { trigger: "header", start: "top top", end: "+=300", scrub: true }
+    });
+  </script>
+</body>
+</html>
